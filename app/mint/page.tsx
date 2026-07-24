@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 
 const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const USDT0_ADDRESS = "0x779Ded0c9e1022225f8E0630b35a9b54bE713736";
+const STABLE_CHAIN_RPC = "https://rpc.stable.xyz"; 
 
 const NFT_ABI = [
   "function mintItem(address recipient, uint256 quantity) public returns (uint256[] memory)",
@@ -32,13 +33,13 @@ export default function MintPage() {
     if (typeof window !== "undefined" && (window as any).ethereum) {
       return new ethers.providers.Web3Provider((window as any).ethereum);
     }
-    throw new Error("Web3 Wallet not found!");
+    return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
   };
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) return alert("Please install MetaMask!");
     try {
-      const provider = getProvider();
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       setAccount(accounts[0]);
     } catch (err) {
@@ -48,7 +49,6 @@ export default function MintPage() {
 
   const fetchMintData = async () => {
     try {
-      if (!(window as any).ethereum) return;
       const provider = getProvider();
       const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
 
@@ -60,14 +60,21 @@ export default function MintPage() {
       setRawSupplyNumber(Number(supply.toString()));
       setTotalSupply(`${supply.toString()} / ${max.toString()}`);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch mint data:", err);
     }
   };
 
   useEffect(() => {
-    if ((window as any).ethereum) {
-      fetchMintData();
-      ((window as any).ethereum as any).on("accountsChanged", (accounts: string[]) => {
+    fetchMintData(); // Ambil data langsung saat halaman dimuat
+
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      (window as any).ethereum.request({ method: "eth_accounts" }).then((accounts: string[]) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        }
+      });
+
+      (window as any).ethereum.on("accountsChanged", (accounts: string[]) => {
         setAccount(accounts[0] || "");
       });
     }
@@ -80,16 +87,14 @@ export default function MintPage() {
     }
     try {
       setLoading(true);
-      const provider = getProvider();
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const signer = provider.getSigner();
 
       const usdtContract = new ethers.Contract(USDT0_ADDRESS, USDT_ABI, signer);
       
-      
       const unitPriceWei = ethers.utils.parseUnits(mintPrice, 6);
       const totalCostWei = unitPriceWei.mul(quantity);
 
-      
       const balance = await usdtContract.balanceOf(account);
       if (balance.lt(totalCostWei)) {
         alert("Insufficient USDT0 balance!");
@@ -97,11 +102,9 @@ export default function MintPage() {
         return;
       }
 
-      
       const approveTx = await usdtContract.approve(NFT_ADDRESS, totalCostWei);
       await approveTx.wait();
 
-      
       const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
       const mintTx = await nftContract.mintItem(account, quantity);
       await mintTx.wait();
@@ -149,7 +152,6 @@ export default function MintPage() {
           </div>
         </div>
 
-        {/* Quantity selector */}
         <div className="w-full flex items-center justify-between bg-[#081512] border border-[#1b4335] px-4 py-3 rounded-xl mb-6">
           <span className="text-xs text-gray-400">Quantity</span>
           <div className="flex items-center gap-3">

@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 
 const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const MARKETPLACE_ADDRESS = "0xd50E95132f4E2a97A4498D40807f7381B954b690";
+const STABLE_CHAIN_RPC = "https://rpc.stable.xyz";
 
 const NFT_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
@@ -39,12 +40,14 @@ export default function MyNFTsPage() {
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null);
   const [listPriceInput, setListPriceInput] = useState<string>("");
 
-  const getProvider = () => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      return new ethers.providers.Web3Provider((window as any).ethereum);
-    }
-    throw new Error("Web3 Wallet not found!");
-  };
+  const STABLE_CHAIN_RPC = "https://rpc.stable.xyz";
+
+const getProvider = () => {
+  if (typeof window !== "undefined" && (window as any).ethereum) {
+    return new ethers.providers.Web3Provider((window as any).ethereum);
+  }
+  return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
+};
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) return alert("Please install MetaMask!");
