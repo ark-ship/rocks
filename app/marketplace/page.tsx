@@ -135,7 +135,7 @@ export default function MarketplacePage() {
     }
   };
 
-  const fetchMarketplaceActivity = async (marketplaceContract: ethers.Contract, provider: ethers.providers.Web3Provider) => {
+  const fetchMarketplaceActivity = async (marketplaceContract: ethers.Contract, provider: ethers.providers.Provider) => {
     try {
       const currentBlock = await provider.getBlockNumber();
       const fromBlock = Math.max(0, currentBlock - 2000); 
