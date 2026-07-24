@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 
 const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const USDT0_ADDRESS = "0x779Ded0c9e1022225f8E0630b35a9b54bE713736";
-const STABLE_CHAIN_RPC = "https://rpc.stable.xyz"; 
+const STABLE_CHAIN_RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.stable.xyz";
 
 const NFT_ABI = [
   "function mintItem(address recipient, uint256 quantity) public returns (uint256[] memory)",
@@ -49,8 +49,18 @@ export default function MintPage() {
 
   const fetchMintData = async () => {
     try {
-      const provider = getProvider();
+      // Pastikan hanya fetch jika window.ethereum ada atau wallet terhubung
+      if (typeof window === "undefined" || !(window as any).ethereum) return;
+      
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
+
+      
+      const code = await provider.getCode(NFT_ADDRESS);
+      if (code === "0x") {
+        console.error("Contract address has no code on this network!");
+        return;
+      }
 
       const price = await nftContract.mintPrice();
       setMintPrice(ethers.utils.formatUnits(price, 6));
@@ -65,17 +75,17 @@ export default function MintPage() {
   };
 
   useEffect(() => {
-    fetchMintData(); // Ambil data langsung saat halaman dimuat
-
     if (typeof window !== "undefined" && (window as any).ethereum) {
       (window as any).ethereum.request({ method: "eth_accounts" }).then((accounts: string[]) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
         }
+        fetchMintData(); 
       });
 
-      (window as any).ethereum.on("accountsChanged", (accounts: string[]) => {
+      ((window as any).ethereum as any).on("accountsChanged", (accounts: string[]) => {
         setAccount(accounts[0] || "");
+        fetchMintData();
       });
     }
   }, []);
