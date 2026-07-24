@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Stable Rocks Minting DApp",
   description: "Mint your exclusive Stable Rocks NFT on Stable Chain",
+  icons: {
+    icon: "/Logo.png",
+  },
 };
 
 export default function RootLayout({

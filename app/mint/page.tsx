@@ -22,7 +22,7 @@ const USDT_ABI = [
 
 export default function MintPage() {
   const [account, setAccount] = useState<string>("");
-  const [mintPrice, setMintPrice] = useState<string>("0.2");
+  const [mintPrice, setMintPrice] = useState<string>("2");
   const [totalSupply, setTotalSupply] = useState<string>("0 / 100");
   const [rawSupplyNumber, setRawSupplyNumber] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
