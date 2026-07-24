@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Stable Rocks Minting DApp",
-  description: "Mint your exclusive Stable Rocks NFT on Stable Chain",
+  title: "Stable Rocks",
+  description: "Mint Stable Rocks NFT on Stable Chain",
   icons: {
     icon: "/Logo.png",
   },
