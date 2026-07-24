@@ -8,6 +8,8 @@ const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const USDT0_ADDRESS = "0x779Ded0c9e1022225f8E0630b35a9b54bE713736";
 const STABLE_CHAIN_RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.stable.xyz";
 
+console.log(process.env.NEXT_PUBLIC_RPC_URL);
+
 const NFT_ABI = [
   "function mintItem(address recipient, uint256 quantity) public returns (uint256[] memory)",
   "function mintPrice() view returns (uint256)",
