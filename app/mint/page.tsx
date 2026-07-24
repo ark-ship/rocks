@@ -8,8 +8,6 @@ const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const USDT0_ADDRESS = "0x779Ded0c9e1022225f8E0630b35a9b54bE713736";
 const STABLE_CHAIN_RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.stable.xyz";
 
-console.log(process.env.NEXT_PUBLIC_RPC_URL);
-
 const NFT_ABI = [
   "function mintItem(address recipient, uint256 quantity) public returns (uint256[] memory)",
   "function mintPrice() view returns (uint256)",
@@ -32,11 +30,18 @@ export default function MintPage() {
   const [quantity, setQuantity] = useState<number>(1);
 
   const getProvider = () => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      return new ethers.providers.Web3Provider((window as any).ethereum);
+  if (typeof window !== "undefined" && (window as any).ethereum) {
+    return new ethers.providers.Web3Provider((window as any).ethereum);
+  }
+
+  return new ethers.providers.StaticJsonRpcProvider(
+    STABLE_CHAIN_RPC,
+    {
+      chainId: 988,
+      name: "stable",
     }
-    return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
-  };
+  );
+};
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) return alert("Please install MetaMask!");
@@ -50,27 +55,36 @@ export default function MintPage() {
   };
 
   const fetchMintData = async () => {
-    try {
-      const provider = new ethers.providers.JsonRpcProvider(
-    process.env.NEXT_PUBLIC_RPC_URL
-);
-      const nftContract = new ethers.Contract(
-    NFT_ADDRESS,
-    NFT_ABI,
-    provider
-);
+  try {
+    const provider = new ethers.providers.StaticJsonRpcProvider(
+      STABLE_CHAIN_RPC,
+      {
+        chainId: 988,
+        name: "stable",
+      }
+    );
 
-      const price = await nftContract.mintPrice();
-      setMintPrice(ethers.utils.formatUnits(price, 6));
+    await provider.ready;
 
-      const supply = await nftContract.totalSupply();
-      const max = await nftContract.maxSupply();
-      setRawSupplyNumber(Number(supply.toString()));
-      setTotalSupply(`${supply.toString()} / ${max.toString()}`);
-    } catch (err) {
-      console.error("Failed to fetch mint data:", err);
-    }
-  };
+    const nftContract = new ethers.Contract(
+      NFT_ADDRESS,
+      NFT_ABI,
+      provider
+    );
+
+    const [price, supply, max] = await Promise.all([
+      nftContract.mintPrice(),
+      nftContract.totalSupply(),
+      nftContract.maxSupply(),
+    ]);
+
+    setMintPrice(ethers.utils.formatUnits(price, 6));
+    setRawSupplyNumber(supply.toNumber());
+    setTotalSupply(`${supply.toString()} / ${max.toString()}`);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   useEffect(() => {
     fetchMintData();

@@ -61,30 +61,56 @@ export default function MarketplacePage() {
   const [totalVolume, setTotalVolume] = useState<string>("0");
   const [volume24h, setVolume24h] = useState<string>("0");
 
-  const getProvider = () => {
-  if (typeof window !== "undefined" && (window as any).ethereum) {
-    return new ethers.providers.Web3Provider((window as any).ethereum);
+  const getReadProvider = () => {
+  return new ethers.providers.StaticJsonRpcProvider(
+    STABLE_CHAIN_RPC,
+    {
+      chainId: 988,
+      name: "stable",
+    }
+  );
+};
+
+const getWriteProvider = () => {
+  if (!(window as any).ethereum) {
+    throw new Error("MetaMask not found");
   }
-  return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
+
+  return new ethers.providers.Web3Provider(
+    (window as any).ethereum
+  );
 };
 
   const connectWallet = async () => {
-    if (!(window as any).ethereum) return alert("Please install MetaMask!");
+  if (!(window as any).ethereum) {
+    return alert("Please install MetaMask!");
+  }
     try {
-      const provider = getProvider();
-      const accounts = await provider.send("eth_requestAccounts", []);
-      setAccount(accounts[0]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    const provider = getWriteProvider();
+
+    const accounts = await provider.send("eth_requestAccounts", []);
+
+    setAccount(accounts[0]);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const fetchMarketplaceData = async () => {
-    try {
-      if (!(window as any).ethereum) return;
-      const provider = getProvider();
-      const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
-      const marketplaceContract = new ethers.Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, provider);
+  try {
+    const provider = getReadProvider();
+
+    const nftContract = new ethers.Contract(
+      NFT_ADDRESS,
+      NFT_ABI,
+      provider
+    );
+
+    const marketplaceContract = new ethers.Contract(
+      MARKETPLACE_ADDRESS,
+      MARKETPLACE_ABI,
+      provider
+    );
 
       const supply = await nftContract.totalSupply();
       const currentSupply = Number(supply.toString());
@@ -247,7 +273,7 @@ export default function MarketplacePage() {
     }
     try {
       setLoading(true);
-      const provider = getProvider();
+      const provider = getWriteProvider();
       const signer = provider.getSigner();
 
       const usdtContract = new ethers.Contract(USDT0_ADDRESS, USDT_ABI, signer);
@@ -278,7 +304,7 @@ export default function MarketplacePage() {
     }
     try {
       setLoading(true);
-      const provider = getProvider();
+      const provider = getWriteProvider();
       const signer = provider.getSigner();
       const marketplaceContract = new ethers.Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, signer);
 
