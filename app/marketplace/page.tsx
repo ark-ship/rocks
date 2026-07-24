@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 const NFT_ADDRESS = "0xE4E9E37c932B9553a405179c97B02ef3a7F2Ca73";
 const MARKETPLACE_ADDRESS = "0xd50E95132f4E2a97A4498D40807f7381B954b690";
 const USDT0_ADDRESS = "0x779Ded0c9e1022225f8E0630b35a9b54bE713736";
-const STABLE_CHAIN_RPC = "https://rpc.stable.xyz";
+const STABLE_CHAIN_RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.stable.xyz";
 
 const NFT_ABI = [
   "function totalSupply() view returns (uint256)",
