@@ -30,12 +30,11 @@ export default function MintPage() {
   const [quantity, setQuantity] = useState<number>(1);
 
   const getProvider = () => {
-  if (typeof window !== "undefined" && (window as any).ethereum) {
-    
-    return new ethers.providers.Web3Provider((window as any).ethereum);
-  }
-  return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
-};
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      return new ethers.providers.Web3Provider((window as any).ethereum);
+    }
+    return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
+  };
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) return alert("Please install MetaMask!");
@@ -50,18 +49,8 @@ export default function MintPage() {
 
   const fetchMintData = async () => {
     try {
-      // Pastikan hanya fetch jika window.ethereum ada atau wallet terhubung
-      if (typeof window === "undefined" || !(window as any).ethereum) return;
-      
-      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+      const provider = getProvider();
       const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
-
-      
-      const code = await provider.getCode(NFT_ADDRESS);
-      if (code === "0x") {
-        console.error("Contract address has no code on this network!");
-        return;
-      }
 
       const price = await nftContract.mintPrice();
       setMintPrice(ethers.utils.formatUnits(price, 6));
@@ -76,12 +65,13 @@ export default function MintPage() {
   };
 
   useEffect(() => {
+    fetchMintData();
+
     if (typeof window !== "undefined" && (window as any).ethereum) {
       (window as any).ethereum.request({ method: "eth_accounts" }).then((accounts: string[]) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
         }
-        fetchMintData(); 
       });
 
       ((window as any).ethereum as any).on("accountsChanged", (accounts: string[]) => {
