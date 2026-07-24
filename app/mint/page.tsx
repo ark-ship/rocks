@@ -49,8 +49,14 @@ export default function MintPage() {
 
   const fetchMintData = async () => {
     try {
-      const provider = getProvider();
-      const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
+      const provider = new ethers.providers.JsonRpcProvider(
+    process.env.NEXT_PUBLIC_RPC_URL
+);
+      const nftContract = new ethers.Contract(
+    NFT_ADDRESS,
+    NFT_ABI,
+    provider
+);
 
       const price = await nftContract.mintPrice();
       setMintPrice(ethers.utils.formatUnits(price, 6));
