@@ -30,11 +30,12 @@ export default function MintPage() {
   const [quantity, setQuantity] = useState<number>(1);
 
   const getProvider = () => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      return new ethers.providers.Web3Provider((window as any).ethereum);
-    }
-    return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
-  };
+  if (typeof window !== "undefined" && (window as any).ethereum) {
+    
+    return new ethers.providers.Web3Provider((window as any).ethereum);
+  }
+  return new ethers.providers.JsonRpcProvider(STABLE_CHAIN_RPC);
+};
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) return alert("Please install MetaMask!");
